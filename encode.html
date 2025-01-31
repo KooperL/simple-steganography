@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Encode - Text Steganography</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        textarea {
+            width: 100%;
+            min-height: 100px;
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .nav-link {
+            color: #666;
+            text-decoration: none;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+        .nav-link:hover {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="nav-link">← Back to Home</a>
+    <h1>Encode Secret Message</h1>
+    
+    <div class="container">
+        <h2>Cover Text</h2>
+        <textarea id="inputText" placeholder="Enter the text where you want to hide your message"></textarea>
+        
+        <h2>Secret Message</h2>
+        <textarea id="hiddenData" placeholder="Enter the secret message you want to hide"></textarea>
+        
+        <button onclick="encodeBinary()">Encode Message</button>
+        
+        <h2>Encoded Text</h2>
+        <textarea id="output" readonly placeholder="Your encoded text will appear here"></textarea>
+    </div>
+
+    <script>
+        function encodeBinary() {
+            const text = document.getElementById('inputText').value;
+            const hiddenData = document.getElementById('hiddenData').value;
+            
+            // Convert hidden data to binary
+            const binaryData = hiddenData.split('').map(char => 
+                char.charCodeAt(0).toString(2).padStart(8, '0')
+            ).join('');
+            
+            // Encode binary into spaces
+            const words = text.split(/\s+/);
+            const encodedWords = [];
+            let binaryIndex = 0;
+            
+            for (let word of words) {
+                if (binaryIndex < binaryData.length) {
+                    // Encode 0 as single space, 1 as two spaces
+                    const spacer = binaryData[binaryIndex] === '0' ? ' ' : '  ';
+                    encodedWords.push(word + spacer);
+                    binaryIndex++;
+                } else {
+                    encodedWords.push(word + ' ');
+                }
+            }
+            
+            document.getElementById('output').value = encodedWords.join('');
+        }
+    </script>
+</body>
+</html> 
