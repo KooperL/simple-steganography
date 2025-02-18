@@ -48,6 +48,52 @@
         .nav-link:hover {
             color: #333;
         }
+        .feedback {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            display: none;
+        }
+        .feedback.error {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+            display: block;
+        }
+        .feedback.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+            display: block;
+        }
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin: 15px 0;
+            justify-content: center;
+        }
+        .stat-item {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        .stat-value.error {
+            color: #c62828;
+        }
+        .stat-value.success {
+            color: #2e7d32;
+        }
     </style>
 </head>
 <body>
@@ -56,18 +102,84 @@
     
     <div class="container">
         <h2>Cover Text</h2>
-        <textarea id="inputText" placeholder="Enter the text where you want to hide your message"></textarea>
+        <textarea id="inputText" placeholder="Enter the text where you want to hide your message" oninput="validateInput()"></textarea>
         
         <h2>Secret Message</h2>
-        <textarea id="hiddenData" placeholder="Enter the secret message you want to hide"></textarea>
+        <textarea id="hiddenData" placeholder="Enter the secret message you want to hide" oninput="validateInput()"></textarea>
         
-        <button onclick="encodeBinary()">Encode Message</button>
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-label">Available Spaces</div>
+                <div id="availableSpaces" class="stat-value">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Required Spaces</div>
+                <div id="requiredSpaces" class="stat-value">0</div>
+            </div>
+        </div>
+
+        <div id="feedback" class="feedback"></div>
+        
+        <button onclick="encodeBinary()" id="encodeButton" disabled>Encode Message</button>
         
         <h2>Encoded Text</h2>
         <textarea id="output" readonly placeholder="Your encoded text will appear here"></textarea>
     </div>
 
     <script>
+        function validateInput() {
+            const coverText = document.getElementById('inputText').value;
+            const secretMessage = document.getElementById('hiddenData').value;
+            const feedback = document.getElementById('feedback');
+            const encodeButton = document.getElementById('encodeButton');
+            const availableSpaces = document.getElementById('availableSpaces');
+            const requiredSpaces = document.getElementById('requiredSpaces');
+
+            // Count available spaces in cover text
+            const words = coverText.split(/\s+/);
+            const availableSpaceCount = words.length - 1;
+
+            // Calculate required spaces for secret message
+            const requiredSpaceCount = secretMessage.length * 8;
+
+            // Update stats
+            availableSpaces.textContent = availableSpaceCount;
+            requiredSpaces.textContent = requiredSpaceCount;
+
+            // Add appropriate classes for styling
+            availableSpaces.className = 'stat-value';
+            requiredSpaces.className = 'stat-value';
+
+            if (coverText.trim() === '') {
+                feedback.textContent = 'Please enter some cover text.';
+                feedback.className = 'feedback error';
+                encodeButton.disabled = true;
+                return;
+            }
+
+            if (secretMessage.trim() === '') {
+                feedback.textContent = 'Please enter a secret message to hide.';
+                feedback.className = 'feedback error';
+                encodeButton.disabled = true;
+                return;
+            }
+
+            if (availableSpaceCount < requiredSpaceCount) {
+                const needed = requiredSpaceCount - availableSpaceCount;
+                feedback.textContent = `Not enough spaces! You need ${needed} more spaces to hide this message.`;
+                feedback.className = 'feedback error';
+                availableSpaces.classList.add('error');
+                requiredSpaces.classList.add('error');
+                encodeButton.disabled = true;
+            } else {
+                feedback.textContent = 'Ready to encode! You have enough spaces to hide your message.';
+                feedback.className = 'feedback success';
+                availableSpaces.classList.add('success');
+                requiredSpaces.classList.add('success');
+                encodeButton.disabled = false;
+            }
+        }
+
         function encodeBinary() {
             const text = document.getElementById('inputText').value;
             const hiddenData = document.getElementById('hiddenData').value;
