@@ -48,6 +48,18 @@
         .nav-link:hover {
             color: #333;
         }
+        .feedback {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            display: none;
+        }
+        .feedback.error {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -60,6 +72,8 @@
         
         <button onclick="decodeBinary()">Decode Message</button>
         
+        <div id="feedback" class="feedback"></div>
+        
         <h2>Decoded Message</h2>
         <textarea id="output" readonly placeholder="Your decoded message will appear here"></textarea>
     </div>
@@ -67,20 +81,41 @@
     <script>
         function decodeBinary() {
             const encodedText = document.getElementById('inputText').value;
-            const words = encodedText.split(/\s+/);
-            let binaryString = '';
+            const feedback = document.getElementById('feedback');
+            const output = document.getElementById('output');
             
-            for (let i = 0; i < words.length - 1; i++) {
-                const spaceBetween = encodedText.split(words[i])[1].split(words[i+1])[0];
-                binaryString += spaceBetween.length === 1 ? '0' : '1';
+            if (!encodedText.trim()) {
+                feedback.textContent = 'Please enter some encoded text.';
+                feedback.className = 'feedback error';
+                output.value = '';
+                return;
             }
-            
-            // Convert binary back to text
-            const decodedText = binaryString.match(/.{8}/g)
-                .map(byte => String.fromCharCode(parseInt(byte, 2)))
-                .join('');
-            
-            document.getElementById('output').value = decodedText;
+
+            try {
+                // Split text into parts and extract spaces
+                const parts = encodedText.split(/(\s+)/);
+                const spaces = parts.filter(part => part.trim() === '');
+                
+                // Convert spaces to binary
+                let binaryString = spaces.map(space => space.length === 1 ? '0' : '1').join('');
+                
+                // Ensure we have complete bytes
+                if (binaryString.length % 8 !== 0) {
+                    throw new Error('Invalid binary data length');
+                }
+                
+                // Convert binary to text
+                const decodedText = binaryString.match(/.{8}/g)
+                    .map(byte => String.fromCharCode(parseInt(byte, 2)))
+                    .join('');
+                
+                output.value = decodedText;
+                feedback.className = 'feedback';
+            } catch (error) {
+                feedback.textContent = 'Error: Could not decode the message. Please check if the text contains valid encoded data.';
+                feedback.className = 'feedback error';
+                output.value = '';
+            }
         }
     </script>
 </body>
